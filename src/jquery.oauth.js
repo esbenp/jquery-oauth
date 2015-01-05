@@ -20,7 +20,7 @@
         logout: function() {
             privateApi.resetData();
             privateApi.updateStorage();
-            privateApi.triggerLogoutEvent();
+            privateApi.fireEvent("logout");
         },
         login: function(accessToken, accessTokenExpiration) {
             data.accessToken = accessToken;
@@ -28,9 +28,11 @@
 
             privateApi.setAuthorizationHeader();
             privateApi.updateStorage();
-            privateApi.triggerLoginEvent();
+            privateApi.fireEvent("login");
         },
         initialize: function(inputOptions) {
+            privateApi.resetOptions();
+
             if (privateApi.hasStoredData()) {
                 privateApi.getStoredData();
 
@@ -39,7 +41,6 @@
                 }
             } else {
                 privateApi.resetData();
-                privateApi.resetOptions();
                 privateApi.updateStorage();
             }
 
@@ -52,8 +53,16 @@
     };
 
     var privateApi = {
+        fireEvent: function(eventType) {
+            if (this.hasEvent(eventType)) {
+                options.events[eventType]();
+            }
+        },
         getStoredData: function() {
             $.extend(data, storage.get("jquery.oauth"));
+        },
+        hasEvent: function(eventType) {
+            return options.events[eventType] !== undefined && typeof options.events[eventType] === "function";
         },
         hasStoredData: function() {
             return storage.get("jquery.oauth") !== undefined;
@@ -80,7 +89,8 @@
         },
         resetOptions: function() {
             options = {
-                csrfToken: null
+                csrfToken: null,
+                events: {}
             };
 
             this.removeAllAjaxHeaders();
@@ -97,12 +107,6 @@
         },
         setCsrfHeader: function() {
             this.setAjaxHeader("X-CSRF-Token", options.csrfToken);
-        },
-        triggerLogoutEvent: function() {
-            $(document).trigger("jquery.oauth:logout");
-        },
-        triggerLoginEvent: function() {
-            $(document).trigger("jquery.oauth:login");
         },
         updateStorage: function() {
             storage.set("jquery.oauth", data);
