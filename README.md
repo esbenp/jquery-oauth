@@ -145,7 +145,7 @@ So thank you [Jeremy Marc](https://github.com/jeremymarc) ([@jeremymarc](https:/
 [Witold Szczerba](https://github.com/witoldsz) ([@witoldsz](https://twitter.com/witoldsz))
 
 # License
-Copyright © 2013 [Esben Petersen](http://github.com/esbenp) & Contributors
+Copyright © 2015 [Esben Petersen](http://github.com/esbenp) & Contributors
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
 the License. You may obtain a copy of the License at: http://www.apache.org/licenses/LICENSE-2.0
