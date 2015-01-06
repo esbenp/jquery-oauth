@@ -11,6 +11,7 @@
     var data        = {};
     var intercept   = false;
     var refreshing  = false;
+    var buffer      = [];
 
     var publicApi = {
         hasAccessToken: function() {
@@ -70,8 +71,41 @@
         activateInterceptor: function() {
             intercept = true;
         },
+        addToBuffer: function(settings, deferred) {
+            buffer.push({
+                deferred: deferred,
+                settings: settings
+            });
+        },
+        clearBuffer: function() {
+            buffer = [];
+        },
         deactivateInterceptor: function() {
             intercept = false;
+        },
+        fireBuffer: function() {
+            var self = this;
+            var deferred;
+            var promises = [];
+            for(var i in buffer) {
+                deferred = buffer[i].deferred;
+
+                buffer[i].settings.refreshRetry = true;
+                buffer[i].settings.headers["Authorization"] = $.ajaxSettings.headers["Authorization"];
+
+                promises.push($.ajax(buffer[i].settings).then(deferred.resolve, deferred.reject));
+            }
+
+            self.clearBuffer();
+
+            $.when.apply($, promises)
+                    .done(function() {
+                        self.setRefreshingFlag(false);
+                    })
+                    .fail(function(){
+                        self.setRefreshingFlag(false);
+                        publicApi.logout();
+                    });
         },
         fireEvent: function(eventType) {
             if (this.hasEvent(eventType)) {
@@ -132,26 +166,38 @@
         },
         setupInterceptor: function() {
             var self = this;
-            $(document).ajaxError(function(event, jqxhr, settings){
-                if (intercept && jqxhr.status === 401 && self.hasEvent("tokenExpiration")) {
-                    setTimeout(function(){
+
+            // Credits to gnarf @ http://stackoverflow.com/a/12446363/602488
+            $.ajaxPrefilter(function(options, originalOptions, jqxhr) {
+                if (options.refreshRetry === true) {
+                    return;
+                }
+
+                var deferred = $.Deferred();
+
+                jqxhr.done(deferred.resolve);
+                jqxhr.fail(function() {
+                    var args = Array.prototype.slice.call(arguments);
+
+                    if (intercept && jqxhr.status === 401 && self.hasEvent("tokenExpiration")) {
+                        self.addToBuffer(options, deferred);
+
                         if (!refreshing) {
                             self.setRefreshingFlag(true);
-                            self.fireEvent("tokenExpiration").done(function(response, status, xhr){
-                                switch(xhr.status) {
-                                    case 200:
-                                        // fire and clear buffer
-                                        break;
-                                    case 401:
-                                        publicApi.logout();
-                                        break;
-                                }
-                            });
+                            self.fireEvent("tokenExpiration")
+                                .success(function () {
+                                    self.fireBuffer();
+                                })
+                                .fail(function () {
+                                    publicApi.logout();
+                                });
                         }
-                    }, 100);
+                    } else {
+                        deferred.rejectWith(jqxhr, args);
+                    }
+                });
 
-                    // add to buffer
-                }
+                return deferred.promise(jqxhr);
             });
         },
         updateStorage: function() {
