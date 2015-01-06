@@ -4,7 +4,7 @@
     } else if (typeof exports === 'object') {
         module.exports = factory(require('jquery', 'store'));
     } else {
-        factory(jQuery);
+        root.returnExports = factory(root.jQuery, root.store);
     }
 }(this, function ($, storage) {
     var options = {};
