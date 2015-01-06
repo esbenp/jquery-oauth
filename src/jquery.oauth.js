@@ -7,8 +7,10 @@
         root.returnExports = factory(root.jQuery, root.store);
     }
 }(this, function ($, storage) {
-    var options = {};
-    var data    = {};
+    var options     = {};
+    var data        = {};
+    var intercept   = false;
+    var refreshing  = false;
 
     var publicApi = {
         hasAccessToken: function() {
@@ -20,18 +22,19 @@
         logout: function() {
             privateApi.resetData();
             privateApi.updateStorage();
+            privateApi.deactivateInterceptor();
+            privateApi.removeAjaxHeader("Authorization");
             privateApi.fireEvent("logout");
         },
         login: function(accessToken, accessTokenExpiration) {
-            data.accessToken = accessToken;
-            data.accessTokenExpiration = accessTokenExpiration;
+            this.setAccessToken(accessToken, accessTokenExpiration);
 
-            privateApi.setAuthorizationHeader();
-            privateApi.updateStorage();
+            privateApi.activateInterceptor();
             privateApi.fireEvent("login");
         },
         initialize: function(inputOptions) {
             privateApi.resetOptions();
+            privateApi.setupInterceptor();
 
             if (privateApi.hasStoredData()) {
                 privateApi.getStoredData();
@@ -49,13 +52,30 @@
             if (options.csrfToken !== null) {
                 privateApi.setCsrfHeader();
             }
+        },
+        setAccessToken: function(accessToken, accessTokenExpiration) {
+            if (accessTokenExpiration === undefined) {
+                accessTokenExpiration = null;
+            }
+
+            data.accessToken           = accessToken;
+            data.accessTokenExpiration = accessTokenExpiration;
+
+            privateApi.setAuthorizationHeader();
+            privateApi.updateStorage();
         }
     };
 
     var privateApi = {
+        activateInterceptor: function() {
+            intercept = true;
+        },
+        deactivateInterceptor: function() {
+            intercept = false;
+        },
         fireEvent: function(eventType) {
             if (this.hasEvent(eventType)) {
-                options.events[eventType]();
+                return options.events[eventType]();
             }
         },
         getStoredData: function() {
@@ -74,7 +94,6 @@
             if (!this.isAjaxHeadersInitialized()) {
                 return true;
             }
-
             $.ajaxSettings.headers[header] = undefined;
         },
         removeAllAjaxHeaders: function() {
@@ -107,6 +126,33 @@
         },
         setCsrfHeader: function() {
             this.setAjaxHeader("X-CSRF-Token", options.csrfToken);
+        },
+        setRefreshingFlag: function(newFlag) {
+            refreshing = newFlag;
+        },
+        setupInterceptor: function() {
+            var self = this;
+            $(document).ajaxError(function(event, jqxhr, settings){
+                if (intercept && jqxhr.status === 401 && self.hasEvent("tokenExpiration")) {
+                    setTimeout(function(){
+                        if (!refreshing) {
+                            self.setRefreshingFlag(true);
+                            self.fireEvent("tokenExpiration").done(function(response, status, xhr){
+                                switch(xhr.status) {
+                                    case 200:
+                                        // fire and clear buffer
+                                        break;
+                                    case 401:
+                                        publicApi.logout();
+                                        break;
+                                }
+                            });
+                        }
+                    }, 100);
+
+                    // add to buffer
+                }
+            });
         },
         updateStorage: function() {
             storage.set("jquery.oauth", data);
