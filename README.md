@@ -35,7 +35,7 @@ Have an endpoint that issues access tokens. Remember do NOT send ```client_id```
 
 ## Example of resource owner implementation in a SPA
 #### Somewhere where things are initialised
-```
+```javascript
 define([/*other dependencies,*/ "jquery-oauth", function(auth){
 	/* other initialisation */
 
@@ -72,7 +72,7 @@ define([/*other dependencies,*/ "jquery-oauth", function(auth){
 ```
 
 #### Login form (when form is submitted)
-```
+```javascript
 $.ajax({
    url: "/access-token-proxy-endpoint",
    method: "POST",
@@ -92,14 +92,14 @@ $.ajax({
 ```
 
 #### Logout
-```
+```javascript
 auth.logout();
 ```
 
 # API
 These calls are available through auth
 
-```
+```javascript
 define(['jquery-oauth'], function(auth){
     // The access token and expiration in seconds
     // Sets authorization headers and stores tokens
