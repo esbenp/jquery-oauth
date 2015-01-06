@@ -5,7 +5,7 @@
     "authors": [
         "Esben Petersen <esbenspetersen@gmail.com>"
     ],
-    "description": "An $.ajax wrapper for OAuth",
+    "description": "A $.ajax wrapper for OAuth 2 access and refresh token management for use in a SPA",
     "main": "src/jquery.oauth.js",
     "keywords": [
         "oauth",
