@@ -37,6 +37,8 @@
             privateApi.resetOptions();
             privateApi.setupInterceptor();
 
+            $.extend(options, inputOptions);
+
             if (privateApi.hasStoredData()) {
                 privateApi.getStoredData();
 
@@ -47,8 +49,6 @@
                 privateApi.resetData();
                 privateApi.updateStorage();
             }
-
-            $.extend(options, inputOptions);
 
             if (options.csrfToken !== null) {
                 privateApi.setCsrfHeader();
