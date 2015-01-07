@@ -15,6 +15,9 @@
     var currentRequests = [];
 
     var publicApi = {
+        getAccessToken: function() {
+            return data.accessToken;
+        },
         hasAccessToken: function() {
             return data.accessToken !== null;
         },
