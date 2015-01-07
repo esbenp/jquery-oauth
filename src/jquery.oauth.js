@@ -64,6 +64,11 @@
 
             privateApi.setAuthorizationHeader();
             privateApi.updateStorage();
+        },
+        setCsrfToken: function(csrfToken) {
+            options.csrfToken = csrfToken;
+
+            privateApi.setCsrfHeader();
         }
     };
 
