@@ -12,13 +12,14 @@
     var intercept   = false;
     var refreshing  = false;
     var buffer      = [];
+    var currentRequests = [];
 
     var publicApi = {
+        getAccessToken: function() {
+            return data.accessToken;
+        },
         hasAccessToken: function() {
             return data.accessToken !== null;
-        },
-        hasAccessTokenExpiration: function() {
-            return data.accessTokenExpiration !== null;
         },
         logout: function() {
             privateApi.resetData();
@@ -27,8 +28,8 @@
             privateApi.removeAjaxHeader("Authorization");
             privateApi.fireEvent("logout");
         },
-        login: function(accessToken, accessTokenExpiration) {
-            this.setAccessToken(accessToken, accessTokenExpiration);
+        login: function(accessToken) {
+            this.setAccessToken(accessToken);
 
             privateApi.activateInterceptor();
             privateApi.fireEvent("login");
@@ -37,33 +38,33 @@
             privateApi.resetOptions();
             privateApi.setupInterceptor();
 
+            $.extend(options, inputOptions);
+
             if (privateApi.hasStoredData()) {
                 privateApi.getStoredData();
 
-                if (this.hasAccessToken() && this.hasAccessTokenExpiration()) {
-                    this.login(data.accessToken, data.accessTokenExpiration);
+                if (this.hasAccessToken()) {
+                    this.login(data.accessToken);
                 }
             } else {
                 privateApi.resetData();
                 privateApi.updateStorage();
             }
 
-            $.extend(options, inputOptions);
-
             if (options.csrfToken !== null) {
                 privateApi.setCsrfHeader();
             }
         },
-        setAccessToken: function(accessToken, accessTokenExpiration) {
-            if (accessTokenExpiration === undefined) {
-                accessTokenExpiration = null;
-            }
-
-            data.accessToken           = accessToken;
-            data.accessTokenExpiration = accessTokenExpiration;
+        setAccessToken: function(accessToken) {
+            data.accessToken = accessToken;
 
             privateApi.setAuthorizationHeader();
             privateApi.updateStorage();
+        },
+        setCsrfToken: function(csrfToken) {
+            options.csrfToken = csrfToken;
+
+            privateApi.setCsrfHeader();
         }
     };
 
@@ -99,13 +100,13 @@
             self.clearBuffer();
 
             $.when.apply($, promises)
-                    .done(function() {
-                        self.setRefreshingFlag(false);
-                    })
-                    .fail(function(){
-                        self.setRefreshingFlag(false);
-                        publicApi.logout();
-                    });
+                .done(function() {
+                    self.setRefreshingFlag(false);
+                })
+                .fail(function(){
+                    self.setRefreshingFlag(false);
+                    publicApi.logout();
+                });
         },
         fireEvent: function(eventType) {
             if (this.hasEvent(eventType)) {
@@ -136,12 +137,13 @@
         },
         resetData: function() {
             data = {
-                accessToken: null,
-                accessTokenExpiration: null
+                accessToken: null
             };
         },
         resetOptions: function() {
             options = {
+                bufferInterval: 25,
+                bufferWaitLimit: 500,
                 csrfToken: null,
                 events: {}
             };
@@ -175,6 +177,10 @@
 
                 var deferred = $.Deferred();
 
+                currentRequests.push(options.url);
+                jqxhr.always(function(){
+                    currentRequests.splice($.inArray(options.url, currentRequests), 1);
+                });
                 jqxhr.done(deferred.resolve);
                 jqxhr.fail(function() {
                     var args = Array.prototype.slice.call(arguments);
@@ -186,7 +192,17 @@
                             self.setRefreshingFlag(true);
                             self.fireEvent("tokenExpiration")
                                 .success(function () {
-                                    self.fireBuffer();
+                                    // Setup buffer interval that waits for all sent requests to return
+                                    var waited   = 0;
+                                    var interval = setInterval(function(){
+                                        waited += options.bufferInterval;
+
+                                        // All requests have returned 401 and have been buffered
+                                        if (currentRequests.length === 0 || waited >= options.bufferWaitLimit) {
+                                            clearInterval(interval);
+                                            self.fireBuffer();
+                                        }
+                                    }, options.bufferInterval);
                                 })
                                 .fail(function () {
                                     publicApi.logout();
