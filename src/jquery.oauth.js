@@ -18,9 +18,6 @@
         hasAccessToken: function() {
             return data.accessToken !== null;
         },
-        hasAccessTokenExpiration: function() {
-            return data.accessTokenExpiration !== null;
-        },
         logout: function() {
             privateApi.resetData();
             privateApi.updateStorage();
@@ -28,8 +25,8 @@
             privateApi.removeAjaxHeader("Authorization");
             privateApi.fireEvent("logout");
         },
-        login: function(accessToken, accessTokenExpiration) {
-            this.setAccessToken(accessToken, accessTokenExpiration);
+        login: function(accessToken) {
+            this.setAccessToken(accessToken);
 
             privateApi.activateInterceptor();
             privateApi.fireEvent("login");
@@ -43,8 +40,8 @@
             if (privateApi.hasStoredData()) {
                 privateApi.getStoredData();
 
-                if (this.hasAccessToken() && this.hasAccessTokenExpiration()) {
-                    this.login(data.accessToken, data.accessTokenExpiration);
+                if (this.hasAccessToken()) {
+                    this.login(data.accessToken);
                 }
             } else {
                 privateApi.resetData();
@@ -55,13 +52,8 @@
                 privateApi.setCsrfHeader();
             }
         },
-        setAccessToken: function(accessToken, accessTokenExpiration) {
-            if (accessTokenExpiration === undefined) {
-                accessTokenExpiration = null;
-            }
-
-            data.accessToken           = accessToken;
-            data.accessTokenExpiration = accessTokenExpiration;
+        setAccessToken: function(accessToken) {
+            data.accessToken = accessToken;
 
             privateApi.setAuthorizationHeader();
             privateApi.updateStorage();
@@ -142,8 +134,7 @@
         },
         resetData: function() {
             data = {
-                accessToken: null,
-                accessTokenExpiration: null
+                accessToken: null
             };
         },
         resetOptions: function() {
