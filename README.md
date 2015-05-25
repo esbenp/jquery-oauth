@@ -6,6 +6,13 @@ A $.ajax wrapper for OAuth 2 access and refresh token management for use in a SP
 This is a library for storing access token client side and use it for $.ajax requests. Secondly, it is a library for
 requesting new access tokens upon expiration.
 
+# Guide
+
+I have written an extensive blog post about writing a web app using Lumen that utilizes this library for client side 
+management of tokens.
+
+[Building a web app with Lumen web API and OAuth2 authentication](http://esbenp.github.io/2015/05/26/lumen-web-api-oauth-2-authentication/)
+
 # Dependencies
 * [jQuery](https://github.com/jquery/jquery) 1.5+
 * [store.js](https://github.com/marcuswestin/store.js) 1.3.17
