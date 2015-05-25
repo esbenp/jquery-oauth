@@ -43,12 +43,12 @@ refreshing access tokens.
 ## Example of resource owner implementation in a SPA
 #### Somewhere where things are initialised
 ```javascript
-define([/*other dependencies,*/ "jquery-oauth", function(auth){
+define([/*other dependencies,*/ "jquery-oauth", function(jqOAuth){
 	/* other initialisation */
 
 	var csrfToken = $("input[name='_token']").val();	
 
-	auth.initialize({
+	var auth = new jqOAuth({
         csrfToken: csrfToken,
         events: {
             login: function() {
@@ -116,7 +116,7 @@ define(['jquery-oauth'], function(auth){
    auth.logout();
 
    // Initialize library
-   auth.initialize({
+   var auth = new jqOAuth({
        csrfToken: "token" //CSRF token,
        events: {
            logout: function(){},
