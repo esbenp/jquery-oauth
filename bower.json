@@ -21,6 +21,9 @@
         "test",
         "tests"
     ],
+    "devDependencies": {
+        "requirejs": "~2.1.16"
+    },
     "dependencies": {
         "jquery": ">=1.5",
         "store-js": "~1.3.17"
