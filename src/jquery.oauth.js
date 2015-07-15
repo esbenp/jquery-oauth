@@ -119,7 +119,7 @@ jqOAuth.prototype._fireEvent = function _fireEvent(eventType) {
 };
 
 jqOAuth.prototype._getStoredData = function _getStoredData() {
-    $.extend(this.data, storage.get("jquery.oauth"));
+    $.extend(this.data, storage.get(this.options.tokenName));
 };
 
 jqOAuth.prototype._hasEvent = function _hasEvent(eventType) {
@@ -127,7 +127,7 @@ jqOAuth.prototype._hasEvent = function _hasEvent(eventType) {
 };
 
 jqOAuth.prototype._hasStoredData = function _hasStoredData() {
-    return storage.get("jquery.oauth") !== undefined;
+    return storage.get(this.options.tokenName) !== undefined;
 };
 
 jqOAuth.prototype._isAjaxHeadersInitialized = function _isAjaxHeadersInitialized() {
@@ -157,7 +157,8 @@ jqOAuth.prototype._resetOptions = function _resetOptions() {
         bufferInterval: 25,
         bufferWaitLimit: 500,
         csrfToken: null,
-        events: {}
+        events: {},
+        tokenName: 'jquery.oauth'
     };
 
     this._removeAllAjaxHeaders();
@@ -235,5 +236,5 @@ jqOAuth.prototype._setupInterceptor = function _setupInterceptor() {
 };
 
 jqOAuth.prototype._updateStorage = function _updateStorage() {
-    storage.set("jquery.oauth", this.data);
+    storage.set(this.options.tokenName, this.data);
 };
