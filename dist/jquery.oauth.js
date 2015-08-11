@@ -1,4 +1,4 @@
-;(function(root, factory) {
+(function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     define(['jquery', 'store'], factory);
   } else if (typeof exports === 'object') {
@@ -36,7 +36,7 @@ var jqOAuth = function jqOAuth(options) {
     }
 }
 
-// Public methods 
+// Public methods
 
 jqOAuth.prototype.getAccessToken = function getAccessToken() {
     return this.data.accessToken;
@@ -219,9 +219,10 @@ jqOAuth.prototype._setupInterceptor = function _setupInterceptor() {
                     self._setRefreshingFlag(true);
                     self._fireEvent("tokenExpiration")
                         .success(function () {
+                            console.log("REFRESH SUCCESS");
                             // Setup buffer interval that waits for all sent requests to return
                             var waited   = 0;
-                            var interval = setInterval(function(){
+                            self.interval = setInterval(function(){
                                 waited += self.options.bufferInterval;
 
                                 // All requests have returned 401 and have been buffered
@@ -232,6 +233,7 @@ jqOAuth.prototype._setupInterceptor = function _setupInterceptor() {
                             }, self.options.bufferInterval);
                         })
                         .fail(function () {
+                            console.log("REFRESH FAIL");
                             self.logout();
                         });
                 }
