@@ -1,6 +1,6 @@
 {
   "name": "jquery-oauth",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "jQuery OAuth ============ A $.ajax wrapper for OAuth 2 access and refresh token management for use in a SPA.",
   "main": "gulpfile.js",
   "scripts": {

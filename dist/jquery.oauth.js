@@ -219,7 +219,6 @@ jqOAuth.prototype._setupInterceptor = function _setupInterceptor() {
                     self._setRefreshingFlag(true);
                     self._fireEvent("tokenExpiration")
                         .success(function () {
-                            console.log("REFRESH SUCCESS");
                             // Setup buffer interval that waits for all sent requests to return
                             var waited   = 0;
                             self.interval = setInterval(function(){
@@ -233,7 +232,6 @@ jqOAuth.prototype._setupInterceptor = function _setupInterceptor() {
                             }, self.options.bufferInterval);
                         })
                         .fail(function () {
-                            console.log("REFRESH FAIL");
                             self.logout();
                         });
                 }
