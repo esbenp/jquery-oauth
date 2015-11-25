@@ -1,4 +1,4 @@
-(function(root, factory) {
+;(function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     define(['jquery', 'store'], factory);
   } else if (typeof exports === 'object') {
@@ -117,7 +117,7 @@ jqOAuth.prototype._fireBuffer = function _fireBuffer() {
         })
         .fail(function(){
             self._setRefreshingFlag(false);
-            this.logout();
+            self.logout();
         });
 };
 

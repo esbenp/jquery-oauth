@@ -108,7 +108,7 @@ jqOAuth.prototype._fireBuffer = function _fireBuffer() {
         })
         .fail(function(){
             self._setRefreshingFlag(false);
-            this.logout();
+            self.logout();
         });
 };
 

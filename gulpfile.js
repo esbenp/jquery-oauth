@@ -36,7 +36,7 @@ gulp.task("umd", ["clean"], function() {
 });
 
 gulp.task("clean", function(callback){
-    del(["dist"], callback);
+    return del(["dist"], callback);
 });
 
 gulp.task("production", ["umd"], function(){
